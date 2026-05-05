@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intel 投資研究終端 | Finnhub 實時數據</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bg: '#010409',
+                            card: '#0d1117',
+                            border: '#30363d',
+                            accent: '#58a6ff',
+                            amd: '#ff4b4b',
+                            arm: '#3fb950'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #010409; color: #c9d1d9; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .card-grad { background: linear-gradient(145deg, #0d1117 0%, #161b22 100%); border: 1px solid #30363d; }
+        .status-pulse { width: 8px; height: 8px; border-radius: 50%; background-color: #3fb950; box-shadow: 0 0 8px #3fb950; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- 頂部導航欄 -->
+    <header class="sticky top-0 z-50 bg-[#0d1117]/80 backdrop-blur-md border-b border-brand-border px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-brand-accent rounded-xl flex items-center justify-center text-black font-black text-xl">I</div>
+                <div>
+                    <h1 class="text-white font-bold text-lg">Intel (INTC) 分析報告</h1>
+                    <div class="flex items-center gap-2">
+                        <div class="status-pulse"></div>
+                        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Finnhub 數據連線中</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 報價區 -->
+            <div class="flex items-center gap-6 bg-black/40 px-5 py-2 rounded-2xl border border-brand-border">
+                <div class="text-right">
+                    <p class="text-[9px] text-slate-500 font-bold uppercase">Latest Price</p>
+                    <div id="price-val" class="text-xl font-black text-white mono">--.--</div>
+                </div>
+                <div class="text-right border-l border-brand-border pl-4">
+                    <p class="text-[9px] text-slate-500 font-bold uppercase">Change (%)</p>
+                    <div id="change-val" class="text-sm font-bold mono text-slate-400">--.--%</div>
+                </div>
+                <button onclick="fetchFinnhubData()" id="sync-btn" class="p-2 bg-brand-accent/10 text-brand-accent rounded-full hover:bg-brand-accent hover:text-black transition-all">
+                    <svg id="sync-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M4 13a8.1 8.1 0 0015.5 2m.5-4a8.1 8.1 0 00-15.5-2"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6 md:p-10 space-y-12">
+
+        <!-- 1. 關鍵財務儀表板 -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="card-grad p-6 rounded-2xl">
+                <p class="text-[10px] text-slate-500 font-bold uppercase mb-2">High (今日最高)</p>
+                <p id="high-val" class="text-2xl font-bold text-white mono">--.--</p>
+            </div>
+            <div class="card-grad p-6 rounded-2xl border-brand-accent/30">
+                <p class="text-[10px] text-brand-accent font-bold uppercase mb-2">Open (今日開盤)</p>
+                <p id="open-val" class="text-2xl font-bold text-white mono">--.--</p>
+            </div>
+            <div class="card-grad p-6 rounded-2xl">
+                <p class="text-[10px] text-slate-500 font-bold uppercase mb-2">Prev Close (昨收)</p>
+                <p id="prev-val" class="text-2xl font-bold text-white mono">--.--</p>
+            </div>
+        </section>
+
+        <!-- 2. 市場競爭與戰略分析 (您的研究內容) -->
+        <section class="space-y-6">
+            <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                <span class="w-1 h-6 bg-brand-accent"></span> 市場競爭與戰略盲點
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- AMD Card -->
+                <div class="card-grad rounded-3xl p-8 group transition-transform hover:scale-[1.01]">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-brand-amd rounded-full shadow-[0_0_12px_#ff4b4b]"></div>
+                            <h3 class="text-xl font-bold text-white">AMD: 靈活的處刑者</h3>
+                        </div>
+                        <span class="px-3 py-1 bg-brand-amd/10 text-brand-amd text-[10px] font-bold rounded uppercase">Overvalued?</span>
+                    </div>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-[10px] text-slate-500 font-bold uppercase mb-2">市場定價假設</h4>
+                            <p class="text-sm text-slate-400 leading-relaxed">市場預期 AMD 能持續在資料中心侵蝕 Intel 市佔。其 MI300 系列被視為能成功挑戰 NVIDIA 的潛力股。</p>
+                        </div>
+                        <div class="p-4 bg-brand-amd/5 border border-brand-amd/20 rounded-xl">
+                            <h4 class="text-[10px] text-brand-amd font-bold uppercase mb-2">投資盲點</h4>
+                            <p class="text-sm text-slate-300 italic">高度依賴 TSMC 供應鏈。若台海風險升溫，AMD 無法像 Intel 那樣擁有內部工廠作為備援。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ARM Card -->
+                <div class="card-grad rounded-3xl p-8 group transition-transform hover:scale-[1.01]">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-brand-arm rounded-full shadow-[0_0_12px_#3fb950]"></div>
+                            <h3 class="text-xl font-bold text-white">ARM: 架構的進擊</h3>
+                        </div>
+                        <span class="px-3 py-1 bg-brand-arm/10 text-brand-arm text-[10px] font-bold rounded uppercase">Structural Shift</span>
+                    </div>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-[10px] text-slate-500 font-bold uppercase mb-2">市場定價假設</h4>
+                            <p class="text-sm text-slate-400 leading-relaxed">預測 Windows on ARM (WoA) 將重演 Apple Silicon 的成功，全面取代 x86 成為筆電主流。</p>
+                        </div>
+                        <div class="p-4 bg-brand-arm/5 border border-brand-arm/20 rounded-xl">
+                            <h4 class="text-[10px] text-brand-arm font-bold uppercase mb-2">投資盲點</h4>
+                            <p class="text-sm text-slate-300 italic">企業軟體相容性與 x86 指令集的深度集成被低估。Intel Lunar Lake 的低功耗表現可能反擊成功。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. IDM 2.0 狀態與提示 -->
+        <section class="card-grad rounded-3xl p-10 text-center border-dashed border-brand-accent/50">
+            <h3 class="text-white font-bold mb-4">系統消息</h3>
+            <p id="status-msg" class="text-sm text-slate-500">
+                等待同步數據... 請確保 API Key 已正確設置。
+            </p>
+        </section>
+
+    </main>
+
+    <footer class="p-10 border-t border-brand-border bg-[#0d1117] text-center">
+        <p class="text-[11px] text-slate-600 uppercase tracking-widest font-bold">
+            Data provided by Finnhub API • Intel Research Portal v2.0
+        </p>
+    </footer>
+
+    <script>
+        /**
+         * ⚠️ 重要：請在此處填入您的 Finnhub API Key
+         */
+        const FINNHUB_KEY = "d7sdshpr01qorsvibpjgd7sdshpr01qorsvibpk0"; 
+
+        async function fetchFinnhubData() {
+            const btn = document.getElementById('sync-btn');
+            const icon = document.getElementById('sync-icon');
+            const status = document.getElementById('status-msg');
+            
+            if (!FINNHUB_KEY || FINNHUB_KEY.length < 5) {
+                status.innerText = "❌ 錯誤：請在代碼中填入有效的 Finnhub API Key。";
+                return;
+            }
+
+            btn.disabled = true;
+            icon.classList.add('animate-spin');
+            status.innerText = "正在從 Finnhub 抓取 INTC 最新數據...";
+
+            try {
+                const url = `https://finnhub.io/api/v1/quote?symbol=INTC&token=${FINNHUB_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.c) { 
+                    // 更新報價
+                    document.getElementById('price-val').innerText = `$${data.c.toFixed(2)}`;
+                    
+                    // 更新漲跌幅並改變顏色
+                    const changeVal = document.getElementById('change-val');
+                    changeVal.innerText = `${data.dp >= 0 ? '+' : ''}${data.dp.toFixed(2)}%`;
+                    changeVal.style.color = data.dp >= 0 ? '#3fb950' : '#ff4b4b';
+
+                    // 更新財務數據
+                    document.getElementById('high-val').innerText = `$${data.h.toFixed(2)}`;
+                    document.getElementById('open-val').innerText = `$${data.o.toFixed(2)}`;
+                    document.getElementById('prev-val').innerText = `$${data.pc.toFixed(2)}`;
+                    
+                    status.innerText = `✅ 同步成功！最後更新：${new Date().toLocaleTimeString()}`;
+                } else {
+                    status.innerText = "❌ 失敗：請檢查 API Key 是否有效。";
+                }
+            } catch (error) {
+                status.innerText = "❌ 連線錯誤：請檢查網路或 API 限制。";
+            } finally {
+                btn.disabled = false;
+                icon.classList.remove('animate-spin');
+            }
+        }
+
+        // 初始自動加載
+        window.onload = () => {
+            fetchFinnhubData();
+            // 每分鐘自動更新
+            setInterval(fetchFinnhubData, 60000);
+        };
+    </script>
+</body>
+</html>
