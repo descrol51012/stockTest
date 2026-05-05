@@ -33,6 +33,10 @@
         .glass { background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(12px); }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
+        
+        /* AI Assistant Animations */
+        #ai-window { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(20px); opacity: 0; pointer-events: none; }
+        #ai-window.active { transform: translateY(0); opacity: 1; pointer-events: auto; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -90,7 +94,6 @@
 
         <!-- 第二排：策略對比與估值 -->
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- 估值對比圖 -->
             <div class="card-grad rounded-2xl p-6 lg:col-span-2">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="font-bold text-white">估值對比 (NTM P/E)</h3>
@@ -101,7 +104,6 @@
                 </div>
             </div>
 
-            <!-- IDM 2.0 計分卡 -->
             <div class="card-grad rounded-2xl p-6">
                 <h3 class="font-bold text-white mb-6">戰略執行計分卡</h3>
                 <div class="space-y-6">
@@ -137,12 +139,11 @@
         </section>
 
         <!-- 第三排：深度競爭者分析 -->
-        <section class="space-y-6">
+        <section class="space-y-6 pb-20">
             <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
                 <span class="w-1 h-6 bg-brand-accent"></span> 競爭者格局與催化劑
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- AMD -->
                 <div class="card-grad rounded-3xl p-8 border-l-4 border-brand-amd">
                     <h3 class="text-brand-amd font-bold text-xl mb-4">AMD (AMD): 伺服器的進擊</h3>
                     <p class="text-sm text-slate-400 leading-relaxed mb-6">
@@ -153,7 +154,6 @@
                         <p class="text-xs text-slate-300 mt-1">若台海風險升溫，AMD 無法像 Intel 一樣具備本土產能避險。</p>
                     </div>
                 </div>
-                <!-- ARM -->
                 <div class="card-grad rounded-3xl p-8 border-l-4 border-brand-arm">
                     <h3 class="text-brand-arm font-bold text-xl mb-4">ARM (ARM): 高效率與低毛利</h3>
                     <p class="text-sm text-slate-400 leading-relaxed mb-6">
@@ -167,58 +167,137 @@
             </div>
         </section>
 
-        <!-- 系統消息欄 -->
-        <div class="bg-slate-900/50 p-4 rounded-xl text-center border border-brand-border">
-            <p id="status-msg" class="text-[10px] text-slate-500 uppercase font-black tracking-widest">
-                System Active • Listening for Market Catalysts
-            </p>
-        </div>
-
     </main>
 
-    <script>
-        const FINNHUB_KEY = "d7sdshpr01qorsvibpjgd7sdshpr01qorsvibpk0"; // 請填入您的 Finnhub API Key
+    <!-- AI Assistant Floating Interface -->
+    <div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
+        <!-- AI Window -->
+        <div id="ai-window" class="w-80 md:w-96 h-[500px] card-grad rounded-2xl mb-4 flex flex-col overflow-hidden shadow-2xl">
+            <div class="p-4 border-b border-brand-border bg-brand-card flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-brand-accent rounded-full animate-pulse"></div>
+                    <span class="text-xs font-bold text-white uppercase tracking-tighter">Strategic Intelligence AI</span>
+                </div>
+                <button onclick="toggleAI()" class="text-slate-500 hover:text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 text-xs leading-relaxed">
+                <div class="bg-brand-accent/10 border border-brand-accent/20 p-3 rounded-xl text-slate-300">
+                    您好，我是您的戰略分析助手。您可以詢問關於 18A 良率、AMD 競爭風險或本網頁呈現的任何投資指標。
+                </div>
+            </div>
 
+            <div class="p-4 border-t border-brand-border">
+                <div class="relative">
+                    <input type="text" id="ai-input" placeholder="詢問戰略問題..." 
+                           class="w-full bg-black border border-brand-border rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-brand-accent transition-all">
+                    <button onclick="askAI()" class="absolute right-2 top-1.5 text-brand-accent hover:scale-110">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toggle Button -->
+        <button onclick="toggleAI()" class="w-14 h-14 bg-brand-accent rounded-full flex items-center justify-center text-black shadow-lg hover:scale-105 transition-all">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </button>
+    </div>
+
+    <script>
+        const FINNHUB_KEY = "d7sdshpr01qorsvibpjgd7sdshpr01qorsvibpk0"; // 請在此填入您的 Finnhub API Key
+        const apiKey = ""; // Gemini API Key 由環境自動提供
+
+        // AI 狀態與功能
+        let aiActive = false;
+        function toggleAI() {
+            aiActive = !aiActive;
+            document.getElementById('ai-window').classList.toggle('active', aiActive);
+        }
+
+        async function askAI() {
+            const input = document.getElementById('ai-input');
+            const messages = document.getElementById('chat-messages');
+            const userQuery = input.value.trim();
+            if (!userQuery) return;
+
+            // 顯示使用者訊息
+            messages.innerHTML += `<div class="bg-slate-800/50 p-3 rounded-xl text-white ml-8 text-right">${userQuery}</div>`;
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+
+            // 顯示載入中
+            const loadingId = 'loading-' + Date.now();
+            messages.innerHTML += `<div id="${loadingId}" class="text-brand-accent animate-pulse">思考中...</div>`;
+
+            // 抓取網頁內容作為背景知識
+            const pageInfo = `
+                這是一個關於 Intel (INTC) 的戰略分析網頁。
+                當前數據摘要：
+                - 18A 良率估計：62%
+                - 外部代工客戶：4/10
+                - AI PC 滲透率：28%
+                - 競爭對手：AMD (伺服器 GPU 威脅)、ARM (電力效率與筆電侵蝕)
+                - 戰略目標：IDM 2.0 轉型。
+                - 估值：Intel NTM P/E 約 15.2x，遠低於 AMD (49.8x) 與 ARM (82.5x)。
+            `;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: userQuery }] }],
+                        systemInstruction: { 
+                            parts: [{ text: `你是一位避險基金的高級半導體分析師。根據以下網頁資訊回答問題：${pageInfo}。請使用專業、精簡且具洞察力的繁體中文回答。` }] 
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                const aiText = result.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，我暫時無法回應。";
+                
+                document.getElementById(loadingId).remove();
+                messages.innerHTML += `<div class="bg-brand-accent/5 border border-brand-border p-3 rounded-xl text-slate-300 mr-8">${aiText}</div>`;
+                messages.scrollTop = messages.scrollHeight;
+            } catch (error) {
+                document.getElementById(loadingId).innerText = "❌ 連線失敗，請檢查 API 設定。";
+            }
+        }
+
+        // 綁定 Enter 鍵
+        document.getElementById('ai-input')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') askAI();
+        });
+
+        // 原有的 Finnhub 功能
         async function fetchFinnhubData() {
             const btn = document.getElementById('sync-btn');
             const icon = document.getElementById('sync-icon');
-            const status = document.getElementById('status-msg');
-            
-            if (!FINNHUB_KEY || FINNHUB_KEY.length < 5) {
-                status.innerText = "❌ 警告：尚未填入有效的 API KEY";
-                return;
-            }
-
+            if (!FINNHUB_KEY) return;
             btn.disabled = true;
             icon.classList.add('animate-spin');
-            status.innerText = "正在串接全球數據中心...";
-
             try {
                 const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=INTC&token=${FINNHUB_KEY}`);
                 const data = await response.json();
-
                 if (data.c) {
                     document.getElementById('price-val').innerText = `$${data.c.toFixed(2)}`;
                     const dp = data.dp.toFixed(2);
                     const changeEl = document.getElementById('change-val');
                     changeEl.innerText = `${dp >= 0 ? '+' : ''}${dp}%`;
                     changeEl.className = `text-[10px] font-bold ml-1 ${dp >= 0 ? 'text-brand-arm' : 'text-brand-amd'}`;
-                    
                     document.getElementById('high-val').innerText = `$${data.h.toFixed(2)}`;
                     document.getElementById('low-val').innerText = `$${data.l.toFixed(2)}`;
-                    document.getElementById('vol-val').innerText = "Active"; // Finnhub Quote 不提供 Vol，可選用其他端點
-                    
-                    status.innerText = `✅ 即時同步成功 • 最後更新於 ${new Date().toLocaleTimeString()}`;
+                    document.getElementById('vol-val').innerText = "Active";
                 }
-            } catch (e) {
-                status.innerText = "❌ 連線超時，請檢查 API Key";
-            } finally {
+            } catch (e) {} finally {
                 btn.disabled = false;
                 icon.classList.remove('animate-spin');
             }
         }
 
-        // 初始化圖表
         function initChart() {
             const ctx = document.getElementById('valuationChart').getContext('2d');
             new Chart(ctx, {
@@ -226,36 +305,20 @@
                 data: {
                     labels: ['Intel', 'AMD', 'NVIDIA', 'ARM', 'TSMC'],
                     datasets: [{
-                        label: 'NTM P/E (預估本益比)',
+                        label: 'NTM P/E',
                         data: [15.2, 49.8, 42.1, 82.5, 25.4],
-                        backgroundColor: [
-                            'rgba(88, 166, 255, 0.6)',
-                            'rgba(255, 75, 75, 0.4)',
-                            'rgba(255, 255, 255, 0.2)',
-                            'rgba(63, 185, 80, 0.4)',
-                            'rgba(148, 163, 184, 0.4)'
-                        ],
-                        borderColor: [
-                            '#58a6ff', '#ff4b4b', '#ffffff', '#3fb950', '#94a3b8'
-                        ],
+                        backgroundColor: ['rgba(88,166,255,0.6)','rgba(255,75,75,0.4)','rgba(255,255,255,0.2)','rgba(63,185,80,0.4)','rgba(148,163,184,0.4)'],
+                        borderColor: ['#58a6ff','#ff4b4b','#ffffff','#3fb950','#94a3b8'],
                         borderWidth: 1
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
-                        x: { grid: { display: false }, ticks: { color: '#c9d1d9' } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#30363d' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
             });
         }
 
         window.onload = () => {
             initChart();
-            fetchFinnhubData();
+            if (FINNHUB_KEY) fetchFinnhubData();
             setInterval(fetchFinnhubData, 60000);
         };
     </script>
