@@ -1,265 +1,100 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Intel 戰略 Alpha 終端 | 新聞整合版</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { bg: '#010409', card: '#0d1117', border: '#30363d', accent: '#58a6ff', amd: '#ff4b4b', arm: '#3fb950' }
-                    }
-                }
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>美股 AI 族群即時儀表板</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans TC', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Consolas', 'monospace']
+          },
+          colors: {
+            ink: '#121417',
+            panel: '#ffffff',
+            mist: '#f4f7f9',
+            line: '#d9e1e7',
+            blue: '#2563eb',
+            teal: '#0f766e',
+            amber: '#b45309',
+            rose: '#be123c'
+          }
         }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #010409; color: #c9d1d9; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .card-grad { background: linear-gradient(145deg, #0d1117 0%, #161b22 100%); border: 1px solid #30363d; }
-        .glass { background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(12px); }
-        #ai-window { transition: all 0.3s ease; transform: translateY(20px); opacity: 0; pointer-events: none; }
-        #ai-window.active { transform: translateY(0); opacity: 1; pointer-events: auto; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
-        .news-item { border-bottom: 1px solid #30363d; padding: 8px 0; transition: all 0.2s; }
-        .news-item:last-child { border-bottom: none; }
-        .news-item:hover { background: rgba(255,255,255,0.02); }
-    </style>
+      }
+    };
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+
+    body {
+      background:
+        radial-gradient(circle at 16% 8%, rgba(37, 99, 235, .10), transparent 30%),
+        radial-gradient(circle at 88% 0%, rgba(15, 118, 110, .10), transparent 28%),
+        #f4f7f9;
+      color: #121417;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, .92);
+      border: 1px solid #d9e1e7;
+      box-shadow: 0 18px 50px rgba(30, 41, 59, .08);
+    }
+
+    .price-up { color: #047857; }
+    .price-down { color: #be123c; }
+    .price-flat { color: #475569; }
+
+    .status-dot {
+      width: .55rem;
+      height: .55rem;
+      border-radius: 999px;
+      background: #94a3b8;
+    }
+
+    .status-dot.live { background: #10b981; box-shadow: 0 0 0 5px rgba(16, 185, 129, .13); }
+    .status-dot.warn { background: #f59e0b; box-shadow: 0 0 0 5px rgba(245, 158, 11, .13); }
+
+    .news-list {
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+    }
+
+    .accent-blue { background: rgba(37, 99, 235, .10); color: #2563eb; }
+    .accent-teal { background: rgba(15, 118, 110, .10); color: #0f766e; }
+    .accent-amber { background: rgba(180, 83, 9, .12); color: #b45309; }
+    .accent-rose { background: rgba(190, 18, 60, .10); color: #be123c; }
+  </style>
 </head>
-<body class="flex flex-col min-h-screen">
-
-    <header class="sticky top-0 z-50 glass border-b border-brand-border px-6 py-3">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-brand-accent rounded-lg flex items-center justify-center text-black font-black">I</div>
-                <h1 class="text-white font-bold tracking-tight">Intel (INTC) Alpha 終端</h1>
+<body class="min-h-screen font-sans">
+  <header class="border-b border-line bg-white/88 backdrop-blur-xl sticky top-0 z-40">
+    <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-md bg-ink text-white">
+              <i data-lucide="circuit-board" class="h-5 w-5"></i>
             </div>
-            <div id="price-display" class="bg-black/50 px-4 py-1 rounded-xl border border-brand-border flex flex-col items-end">
-                <span id="price-val" class="text-lg font-black text-white mono">$--.--</span>
-                <span id="change-val" class="text-[10px] font-bold text-slate-500">REAL-TIME FEED</span>
+            <div>
+              <h1 class="text-xl font-black tracking-normal text-ink sm:text-2xl">美股 AI 族群即時儀表板</h1>
+              <p class="text-sm text-slate-500">股價、四大指數與個股新聞自動更新</p>
             </div>
+          </div>
         </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto p-6 space-y-8 pb-24">
-        <!-- 核心狀態 -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="card-grad p-4 rounded-xl text-center">
-                <p class="text-[10px] text-slate-500 font-bold uppercase">18A 良率</p>
-                <p class="text-lg font-bold text-brand-accent">優於預期</p>
-            </div>
-            <div class="card-grad p-4 rounded-xl text-center">
-                <p class="text-[10px] text-slate-500 font-bold uppercase">地緣溢價</p>
-                <p class="text-lg font-bold text-white">+25% (關稅)</p>
-            </div>
-            <div class="card-grad p-4 rounded-xl text-center text-brand-amd">
-                <p class="text-[10px] text-slate-500 font-bold uppercase">AMD P/E</p>
-                <p class="text-lg font-bold">49.8x</p>
-            </div>
-            <div class="card-grad p-4 rounded-xl text-center text-brand-arm">
-                <p class="text-[10px] text-slate-500 font-bold uppercase">ARM P/E</p>
-                <p class="text-lg font-bold">82.5x</p>
-            </div>
-        </section>
-
-        <!-- 市場競爭與即時消息 -->
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- AMD 區塊 -->
-            <div class="card-grad rounded-2xl flex flex-col overflow-hidden border-t-4 border-brand-amd">
-                <div class="p-6 pb-2">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-brand-amd font-bold flex items-center gap-2 text-lg">
-                            AMD: 靈活的處刑者
-                        </h3>
-                        <span class="text-[10px] bg-brand-amd/20 text-brand-amd px-2 py-1 rounded mono">DAILY BRIEF</span>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mb-4 italic">市場盲點：高度依賴 TSMC 單一來源。若海峽緊張升溫，其高溢價將面臨清算。</p>
-                </div>
-                <div class="bg-black/30 p-4 pt-2 flex-1">
-                    <h4 class="text-[10px] font-bold text-slate-500 uppercase mb-2 border-b border-brand-border pb-1">即時消息 (AMD)</h4>
-                    <div id="news-amd" class="h-48 overflow-y-auto space-y-2 pr-2 text-[10px]">
-                        <div class="animate-pulse text-slate-600">正在接入財經數據流...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ARM 區塊 -->
-            <div class="card-grad rounded-2xl flex flex-col overflow-hidden border-t-4 border-brand-arm">
-                <div class="p-6 pb-2">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-brand-arm font-bold flex items-center gap-2 text-lg">
-                            ARM: 無所不在的架構
-                        </h3>
-                        <span class="text-[10px] bg-brand-arm/20 text-brand-arm px-2 py-1 rounded mono">DAILY BRIEF</span>
-                    </div>
-                    <p class="text-[11px] text-slate-400 mb-4 italic">市場盲點：企業級軟體對 x86 的依賴超乎預期。Intel 能效進步可能阻擋其攻勢。</p>
-                </div>
-                <div class="bg-black/30 p-4 pt-2 flex-1">
-                    <h4 class="text-[10px] font-bold text-slate-500 uppercase mb-2 border-b border-brand-border pb-1">即時消息 (ARM)</h4>
-                    <div id="news-arm" class="h-48 overflow-y-auto space-y-2 pr-2 text-[10px]">
-                        <div class="animate-pulse text-slate-600">正在接入財經數據流...</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 圖表分析 -->
-        <section class="card-grad rounded-2xl p-6">
-            <h3 class="font-bold text-white mb-4 text-sm">市場估值對比 (NTM P/E)</h3>
-            <div class="h-[200px]"><canvas id="valuationChart"></canvas></div>
-        </section>
-    </main>
-
-    <!-- AI 戰略助理 -->
-    <div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
-        <div id="ai-window" class="w-80 md:w-96 h-[450px] card-grad rounded-2xl mb-4 flex flex-col overflow-hidden shadow-2xl">
-            <div class="p-4 border-b border-brand-border bg-brand-card flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></div>
-                    <span class="text-xs font-bold text-white">ALPHA INTELLIGENCE</span>
-                </div>
-                <button onclick="toggleAI()" class="text-slate-500 hover:text-white">✕</button>
-            </div>
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 text-[11px]">
-                <div class="bg-brand-accent/10 p-3 rounded-xl text-slate-300 border border-brand-accent/20">
-                    已讀取最新 AMD 與 ARM 新聞動態。需要我為您分析這些消息背後的戰略意義嗎？
-                </div>
-            </div>
-            <div class="p-4 border-t border-brand-border bg-black/40">
-                <div class="flex gap-2">
-                    <input type="text" id="ai-input" placeholder="詢問戰略風險或估值..." class="flex-1 bg-black border border-brand-border rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-accent">
-                    <button onclick="askAI()" class="bg-brand-accent text-black px-4 py-2 rounded-lg font-bold text-xs hover:bg-white transition-colors">發送</button>
-                </div>
-            </div>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div class="flex items-center gap-2 rounded-md border border-line bg-mist px-3 py-2 text-sm text-slate-600">
+            <span id="feed-dot" class="status-dot"></span>
+            <span id="feed-status">準備更新</span>
+          </div>
+          <button id="refresh-btn" class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-ink px-4 text-sm font-bold text-white transition hover:bg-slate-700">
+            <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+            更新
+          </button>
         </div>
-        <button onclick="toggleAI()" class="w-14 h-14 bg-brand-accent rounded-full flex items-center justify-center text-black shadow-lg hover:scale-110 transition-all">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-        </button>
+      </div>
     </div>
-
-    <script>
-        // 設定區
-        const FINNHUB_KEY = "d7sdshpr01qorsvibpjgd7sdshpr01qorsvibpk0"; 
-        const GEMINI_API_KEY = "AiZaSyC4ALJhpLEb6xy65mMHuzryTmxsZqJJLdQ";
-        const MODEL_NAME = "gemini-1.5-flash"; 
-
-        let aiActive = false;
-        function toggleAI() {
-            aiActive = !aiActive;
-            document.getElementById('ai-window').classList.toggle('active', aiActive);
-        }
-
-        async function askAI() {
-            const input = document.getElementById('ai-input');
-            const messages = document.getElementById('chat-messages');
-            const userQuery = input.value.trim();
-            if (!userQuery) return;
-
-            messages.innerHTML += `<div class="text-right"><span class="bg-brand-accent/20 text-white px-3 py-2 rounded-2xl inline-block border border-brand-accent/30">${userQuery}</span></div>`;
-            input.value = '';
-            
-            const loadingId = 'L-' + Date.now();
-            messages.innerHTML += `<div id="${loadingId}" class="text-brand-accent animate-pulse">正在訪問分析模組...</div>`;
-            messages.scrollTop = messages.scrollHeight;
-
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `你是一位避險基金分析師。請針對以下問題提供深入的戰略見解。問題：${userQuery}` }] }]
-                    })
-                });
-                const result = await response.json();
-                const aiText = result.candidates?.[0]?.content?.parts?.[0]?.text || "分析模組未回傳內容。";
-                document.getElementById(loadingId).remove();
-                messages.innerHTML += `<div class="bg-brand-card border border-brand-border p-3 rounded-xl text-slate-300 leading-relaxed shadow-inner">${aiText.replace(/\n/g, '<br>')}</div>`;
-            } catch (e) {
-                document.getElementById(loadingId).innerHTML = `<span class="text-red-400">連線失敗。</span>`;
-            }
-            messages.scrollTop = messages.scrollHeight;
-        }
-
-        async function fetchNews(symbol, containerId) {
-            const container = document.getElementById(containerId);
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                
-                const res = await fetch(`https://finnhub.io/api/v1/company-news?symbol=${symbol}&from=${lastWeek}&to=${today}&token=${FINNHUB_KEY}`);
-                const news = await res.json();
-                
-                if (news && news.length > 0) {
-                    container.innerHTML = news.slice(0, 8).map(item => `
-                        <div class="news-item">
-                            <a href="${item.url}" target="_blank" class="hover:text-brand-accent transition-colors block">
-                                <p class="font-bold text-slate-200 mb-1 leading-snug">${item.headline}</p>
-                                <div class="flex justify-between items-center opacity-60">
-                                    <span>${item.source}</span>
-                                    <span>${new Date(item.datetime * 1000).toLocaleDateString()}</span>
-                                </div>
-                            </a>
-                        </div>
-                    `).join('');
-                } else {
-                    container.innerHTML = '<p class="text-slate-600">目前無最新重大消息。</p>';
-                }
-            } catch (e) {
-                container.innerHTML = '<p class="text-red-900/50">數據源暫時離線</p>';
-            }
-        }
-
-        async function fetchStockPrice() {
-            try {
-                const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=INTC&token=${FINNHUB_KEY}`);
-                const data = await res.json();
-                if (data.c) {
-                    document.getElementById('price-val').innerText = `$${data.c.toFixed(2)}`;
-                    const change = data.dp.toFixed(2);
-                    const color = change >= 0 ? 'text-green-400' : 'text-red-400';
-                    document.getElementById('change-val').innerHTML = `<span class="${color}">${change >= 0 ? '▲' : '▼'} ${Math.abs(change)}%</span>`;
-                }
-            } catch (e) {}
-        }
-
-        window.onload = () => {
-            fetchStockPrice();
-            fetchNews('AMD', 'news-amd');
-            fetchNews('ARM', 'news-arm');
-            
-            setInterval(fetchStockPrice, 60000);
-
-            const ctx = document.getElementById('valuationChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Intel', 'AMD', 'NVIDIA', 'ARM', 'TSMC'],
-                    datasets: [{
-                        data: [15.2, 49.8, 42.1, 82.5, 25.4],
-                        backgroundColor: ['#58a6ff', '#ff4b4b', '#94a3b8', '#3fb950', '#6e7681'],
-                        borderRadius: 4
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: { 
-                        y: { beginAtZero: true, grid: { color: '#30363d' }, ticks: { color: '#8b949e', font: { size: 9 } } },
-                        x: { grid: { display: false }, ticks: { color: '#8b949e', font: { size: 9 } } } 
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
-
-            document.getElementById('ai-input').onkeypress = (e) => e.key === 'Enter' && askAI();
-        };
-    </script>
-</body>
-</html>
+  </header>
