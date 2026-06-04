@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+
+body {
+  font-family: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
+  background:
+    radial-gradient(circle at 16% 8%, rgba(37, 99, 235, .10), transparent 30%),
+    radial-gradient(circle at 88% 0%, rgba(15, 118, 110, .10), transparent 28%),
+    #f4f7f9;
+  color: #121417;
+}
+
+.panel {
+  background: rgba(255, 255, 255, .92);
+  border: 1px solid #d9e1e7;
+  box-shadow: 0 18px 50px rgba(30, 41, 59, .08);
+}
+
+.price-up { color: #047857; }
+.price-down { color: #be123c; }
+.price-flat { color: #475569; }
+
+.status-dot {
+  width: .55rem;
+  height: .55rem;
+  border-radius: 999px;
+  background: #94a3b8;
+}
+
+.status-dot.live { background: #10b981; box-shadow: 0 0 0 5px rgba(16, 185, 129, .13); }
+.status-dot.warn { background: #f59e0b; box-shadow: 0 0 0 5px rgba(245, 158, 11, .13); }
+
+.news-list {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.accent-blue { background: rgba(37, 99, 235, .10); color: #2563eb; }
+.accent-teal { background: rgba(15, 118, 110, .10); color: #0f766e; }
+.accent-amber { background: rgba(180, 83, 9, .12); color: #b45309; }
+.accent-rose { background: rgba(190, 18, 60, .10); color: #be123c; }
+
+
+
