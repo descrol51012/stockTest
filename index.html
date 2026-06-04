@@ -6,91 +6,30 @@
   <title>美股 AI 族群即時儀表板</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'Noto Sans TC', 'system-ui', 'sans-serif'],
-            mono: ['JetBrains Mono', 'Consolas', 'monospace']
-          },
-          colors: {
-            ink: '#121417',
-            panel: '#ffffff',
-            mist: '#f4f7f9',
-            line: '#d9e1e7',
-            blue: '#2563eb',
-            teal: '#0f766e',
-            amber: '#b45309',
-            rose: '#be123c'
-          }
-        }
-      }
-    };
-  </script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+  <link rel="stylesheet" href="styles.css">
 
-    body {
-      background:
-        radial-gradient(circle at 16% 8%, rgba(37, 99, 235, .10), transparent 30%),
-        radial-gradient(circle at 88% 0%, rgba(15, 118, 110, .10), transparent 28%),
-        #f4f7f9;
-      color: #121417;
-    }
-
-    .panel {
-      background: rgba(255, 255, 255, .92);
-      border: 1px solid #d9e1e7;
-      box-shadow: 0 18px 50px rgba(30, 41, 59, .08);
-    }
-
-    .price-up { color: #047857; }
-    .price-down { color: #be123c; }
-    .price-flat { color: #475569; }
-
-    .status-dot {
-      width: .55rem;
-      height: .55rem;
-      border-radius: 999px;
-      background: #94a3b8;
-    }
-
-    .status-dot.live { background: #10b981; box-shadow: 0 0 0 5px rgba(16, 185, 129, .13); }
-    .status-dot.warn { background: #f59e0b; box-shadow: 0 0 0 5px rgba(245, 158, 11, .13); }
-
-    .news-list {
-      scrollbar-width: thin;
-      scrollbar-color: #cbd5e1 transparent;
-    }
-
-    .accent-blue { background: rgba(37, 99, 235, .10); color: #2563eb; }
-    .accent-teal { background: rgba(15, 118, 110, .10); color: #0f766e; }
-    .accent-amber { background: rgba(180, 83, 9, .12); color: #b45309; }
-    .accent-rose { background: rgba(190, 18, 60, .10); color: #be123c; }
-  </style>
 </head>
 <body class="min-h-screen font-sans">
-  <header class="border-b border-line bg-white/88 backdrop-blur-xl sticky top-0 z-40">
+  <header class="border-b border-slate-200 bg-white/88 backdrop-blur-xl sticky top-0 z-40">
     <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div class="flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-md bg-ink text-white">
+            <div class="flex h-10 w-10 items-center justify-center rounded-md bg-slate-950 text-white">
               <i data-lucide="circuit-board" class="h-5 w-5"></i>
             </div>
             <div>
-              <h1 class="text-xl font-black tracking-normal text-ink sm:text-2xl">美股 AI 族群即時儀表板</h1>
+              <h1 class="text-xl font-black tracking-normal text-slate-950 sm:text-2xl">美股 AI 族群即時儀表板</h1>
               <p class="text-sm text-slate-500">股價、四大指數與個股新聞自動更新</p>
             </div>
           </div>
         </div>
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div class="flex items-center gap-2 rounded-md border border-line bg-mist px-3 py-2 text-sm text-slate-600">
+          <div class="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
             <span id="feed-dot" class="status-dot"></span>
             <span id="feed-status">準備更新</span>
           </div>
-          <button id="refresh-btn" class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-ink px-4 text-sm font-bold text-white transition hover:bg-slate-700">
+          <button id="refresh-btn" class="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-slate-950 px-4 text-sm font-bold text-white transition hover:bg-slate-700">
             <i data-lucide="refresh-cw" class="h-4 w-4"></i>
             更新
           </button>
@@ -98,3 +37,66 @@
       </div>
     </div>
   </header>
+
+  <main class="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+    <section class="panel rounded-lg p-4">
+      <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 class="text-base font-black text-slate-950">市場指數</h2>
+          <p class="text-sm text-slate-500">道瓊、納斯達克、費城半導體、標普 500</p>
+        </div>
+        <p id="updated-at" class="font-mono text-xs font-bold text-slate-500">尚未更新</p>
+      </div>
+      <div id="market-grid" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"></div>
+    </section>
+
+    <section>
+      <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 class="text-base font-black text-slate-950">AI 類股族群</h2>
+          <p class="text-sm text-slate-500">依 AI 晶片、雲端平台、半導體設備、記憶體與電源散熱分組</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-500">
+          <i data-lucide="clock-3" class="h-4 w-4"></i>
+          股價每 60 秒更新，新聞每 10 分鐘更新
+        </div>
+      </div>
+      <div id="sector-grid" class="space-y-5"></div>
+    </section>
+  </main>
+
+  <template id="quote-card-template">
+    <article class="rounded-lg border border-slate-200 bg-white p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="stock-symbol font-mono text-sm font-black text-slate-500"></p>
+          <h3 class="stock-name mt-1 text-base font-black text-slate-950"></h3>
+        </div>
+        <span class="stock-role rounded-md bg-slate-50 px-2 py-1 text-xs font-bold text-slate-600"></span>
+      </div>
+      <div class="mt-4 flex items-end justify-between gap-3">
+        <div>
+          <p class="stock-price font-mono text-2xl font-black text-slate-950">$--</p>
+          <p class="stock-time mt-1 text-xs text-slate-500">等待報價</p>
+        </div>
+        <p class="stock-change font-mono text-sm font-black price-flat">--</p>
+      </div>
+      <div class="mt-4 border-t border-slate-200 pt-3">
+        <div class="mb-2 flex items-center justify-between">
+          <p class="text-xs font-black uppercase tracking-normal text-slate-500">最新新聞</p>
+          <a class="stock-yahoo inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-teal-700" target="_blank" rel="noreferrer">
+            Yahoo
+            <i data-lucide="external-link" class="h-3 w-3"></i>
+          </a>
+        </div>
+        <div class="stock-news news-list max-h-52 space-y-3 overflow-y-auto pr-1 text-sm"></div>
+      </div>
+    </article>
+  </template>
+  <script src="app.js" defer></script>
+
+</body>
+</html>
+
+
+
