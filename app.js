@@ -247,16 +247,16 @@ async function fetchNews(symbol) {
 
 function renderMarketShell() {
   marketGrid.innerHTML = indices.map((item) => `
-    <article class="rounded-lg border border-slate-200 bg-white p-4" data-index="${item.symbol}">
+    <article class="quote-card rounded-lg border p-4" data-index="${item.symbol}">
       <div class="flex items-start justify-between">
         <div>
-          <p class="font-mono text-xs font-black text-slate-500">${item.short}</p>
-          <h3 class="mt-1 text-base font-black text-slate-950">${item.name}</h3>
+          <p class="text-muted font-mono text-xs font-black">${item.short}</p>
+          <h3 class="text-primary mt-1 text-base font-black">${item.name}</h3>
         </div>
-        <i data-lucide="activity" class="h-5 w-5 text-slate-400"></i>
+        <i data-lucide="activity" class="text-muted h-5 w-5"></i>
       </div>
       <div class="mt-5 flex items-end justify-between">
-        <p class="index-price font-mono text-2xl font-black text-slate-950">--</p>
+        <p class="index-price text-primary font-mono text-2xl font-black">--</p>
         <p class="index-change font-mono text-sm font-black price-flat">--</p>
       </div>
     </article>
@@ -275,8 +275,8 @@ function renderSectorShell() {
             <i data-lucide="${sector.icon}" class="h-5 w-5"></i>
           </div>
           <div>
-            <h3 class="text-lg font-black text-slate-950">${sector.title}</h3>
-            <p class="text-sm text-slate-500">${sector.summary}</p>
+            <h3 class="text-primary text-lg font-black">${sector.title}</h3>
+            <p class="text-muted text-sm">${sector.summary}</p>
           </div>
         </div>
       </div>
@@ -291,7 +291,7 @@ function renderSectorShell() {
       node.querySelector('.stock-name').textContent = stock.name;
       node.querySelector('.stock-role').textContent = stock.role;
       node.querySelector('.stock-yahoo').href = `https://finance.yahoo.com/quote/${stock.symbol}`;
-      node.querySelector('.stock-news').innerHTML = '<p class="text-slate-500">正在載入新聞...</p>';
+      node.querySelector('.stock-news').innerHTML = '<p class="text-muted">正在載入新聞...</p>';
       cards.appendChild(node);
     });
     sectorGrid.appendChild(section);
@@ -326,13 +326,13 @@ function applyNews(symbol, items) {
   const root = document.querySelector(`[data-symbol="${symbol}"] .stock-news`);
   if (!root) return;
   if (!items.length) {
-    root.innerHTML = `<a class="font-bold text-blue-600 hover:text-teal-700" target="_blank" rel="noreferrer" href="https://finance.yahoo.com/quote/${symbol}/news">查看 Yahoo Finance 新聞</a>`;
+    root.innerHTML = `<a class="link-accent font-bold" target="_blank" rel="noreferrer" href="https://finance.yahoo.com/quote/${symbol}/news">查看 Yahoo Finance 新聞</a>`;
     return;
   }
   root.innerHTML = items.map((item) => `
-    <a href="${item.link}" target="_blank" rel="noreferrer" class="block rounded-md border border-transparent p-2 transition hover:border-slate-200 hover:bg-slate-50">
-      <p class="font-bold leading-snug text-slate-950">${item.title}</p>
-      <p class="mt-1 text-xs text-slate-500">${item.source}${item.date ? ` · ${item.date.toLocaleDateString('zh-TW')}` : ''}</p>
+    <a href="${item.link}" target="_blank" rel="noreferrer" class="news-link block rounded-md border border-transparent p-2 transition">
+      <p class="text-primary font-bold leading-snug">${item.title}</p>
+      <p class="text-muted mt-1 text-xs">${item.source}${item.date ? ` · ${item.date.toLocaleDateString('zh-TW')}` : ''}</p>
     </a>
   `).join('');
 }
