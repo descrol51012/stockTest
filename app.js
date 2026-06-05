@@ -377,7 +377,7 @@ async function updateQuotes() {
   updatedAt.textContent = `更新時間 ${new Date().toLocaleString('zh-TW')}`;
   setStatus(failed ? `部分報價失敗 ${failed} 筆` : '即時資料已更新', failed ? 'warn' : 'live');
 }
-
+ 
 async function updateNews() {
   const stockItems = sectors.flatMap((sector) => sector.stocks);
   const jobs = stockItems.map((stock) => fetchNews(stock.symbol).then((items) => {
